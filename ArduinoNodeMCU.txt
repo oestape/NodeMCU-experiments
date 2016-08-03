@@ -257,3 +257,18 @@ File ServoSweepNodeMCU has all together
 * client.println or client.print send a TCP packet and wait for a response. Is better to condstruct a String and send all the html file in a single packet
 * servos have a range that is not 0 180, mine works from 30-180. Trying to go below 30 makes the servo vibrate continuously which I guess is not a good thing for the battery life or for the servo
 
+Next:
+-----
+
+* Use a responsive slider bar like noUiSlider (http://refreshless.com/nouislider/)
+* Use a responsive grid system like Bootstrap (http://getbootstrap.com/) or Skeleton (http://getskeleton.com/)
+* Remove unused styles from above: 
+** With Chrome (http://www.labnol.org/internet/remove-unused-css/28635/)
+** With other scripts: https://addyosmani.com/blog/removing-unused-css/
+* Write a program simple that converts the css, js to a String in a .c or .h
+* NodeMCU should provide static css, js, html and a dynamic json API (with the state of the inputs and outputs). In the client side javascript the UI buttons, sliders, labels will be updated
+* The JSON API should provide (all are optional, the top ones have more priority):
+** Methods to change the outputs
+** State of the inputs and outputs
+** Current configuration (what sensor/motor is connected to each I/O)
+** Methods to change the configuration
