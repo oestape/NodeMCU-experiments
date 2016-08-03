@@ -1,10 +1,16 @@
 #include <ESP8266WiFi.h>
+#include <Servo.h>
 
 const char* ssid = "NODEMCU";
 const char* password = "1234";
 
 int ledPin = 13; // GPIO13 -> Mapped to NodeMCU D7
+int servoPin = 12; // GPIO12 -> Mapped to NodeMCU D6
 WiFiServer server(80);
+
+Servo myservo;  // create servo object to control a servo
+// twelve servo objects can be created on most boards
+
 
 int ledValue = LOW;
 int servoPos = 0;
@@ -15,6 +21,8 @@ void setup() {
 
   pinMode(ledPin, OUTPUT);
   digitalWrite(ledPin, LOW);
+
+  myservo.attach(servoPin);
 
   //uncomment only one of those:
   //setupWifiRouter(); //connects to a router. You need to use the serial output to know the IP it has been assigned
@@ -86,7 +94,9 @@ void loop() {
     digitalWrite(ledPin, LOW);
     ledValue = LOW;
   } else if ((pos = request.indexOf("/SER=")) != -1) {
-    //TODO
+    String strDegree = request.substring(pos+5);
+    servoPos = strDegree.toInt();
+    myservo.write(servoPos);
   } else if (request.indexOf("mystyle.css") != -1) {
     printCSS(client);
     return;
@@ -128,13 +138,17 @@ void loop() {
   out += ">OFF</a> ";
 
   out += "<br><br>";
-  for (int i = 0; i < 9; i++)
+  for (int i = 0; i < 19; i++)
   {
     out += "<a href=\"/SER=";
-    out += (i - 4) * 45;
+    out += i * 10;
     out += "\"";
+    if(servoPos == i * 10)
+    {
+      out += " class=\"bp\"";
+    }
     out += ">";
-    out += (i - 4) * 45;
+    out += i * 10;
     out += "</a> ";
   }
 
