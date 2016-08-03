@@ -217,6 +217,8 @@ Code (I saved it as ServoSweepNodeMCU):
 NodeMCU as an Access Point
 --------------------------
 
+See NodeMCUWebServer.ino
+
 Library documentation:
 https://github.com/esp8266/Arduino/blob/master/doc/libraries.md#wifiesp8266wifi-library
 
