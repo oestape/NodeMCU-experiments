@@ -1,15 +1,15 @@
 #include <ESP8266WiFi.h>
- 
+
 const char* ssid = "NODEMCU";
 const char* password = "1234";
- 
+
 int ledPin = 13; // GPIO13 -> Mapped to NodeMCU D7
 WiFiServer server(80);
- 
+
 void setup() {
   Serial.begin(115200);
   delay(10);
- 
+
   pinMode(ledPin, OUTPUT);
   digitalWrite(ledPin, LOW);
 
@@ -25,20 +25,20 @@ void setupWifiRouter()
   Serial.println();
   Serial.print("Connecting to ");
   Serial.println(ssid);
- 
+
   WiFi.begin(ssid, password);
- 
+
   while (WiFi.status() != WL_CONNECTED) {
     delay(500);
     Serial.print(".");
   }
   Serial.println("");
   Serial.println("WiFi connected");
- 
+
   // Start the server
   server.begin();
   Serial.println("Server started");
- 
+
   // Print the IP address
   Serial.print("Use this URL to connect: ");
   Serial.print("http://");
@@ -54,27 +54,27 @@ void setupWifiAP()
   server.begin();
 
 }
- 
+
 void loop() {
   // Check if a client has connected
   WiFiClient client = server.available();
   if (!client) {
     return;
   }
- 
+
   // Wait until the client sends some data
   Serial.println("new client");
-  while(!client.available()){
+  while (!client.available()) {
     delay(1);
   }
- 
+
   // Read the first line of the request
   String request = client.readStringUntil('\r');
   Serial.println(request);
   client.flush();
- 
+
   // Match the request
- 
+
   int value = LOW;
   if (request.indexOf("/LED=ON") != -1)  {
     digitalWrite(ledPin, HIGH);
@@ -83,99 +83,99 @@ void loop() {
     digitalWrite(ledPin, LOW);
     value = LOW;
   } else if (request.indexOf("mystyle.css") != -1) {
-  client.println("HTTP/1.1 200 OK");
-  client.println("Content-Type: text/css");
-  client.println("Expires: Sat, 05 Apr 2025 00:00:00 GMT");
-  client.println(""); //  do not forget this one
-  printCSS(client);
-  return;
+    client.println("HTTP/1.1 200 OK");
+    client.println("Content-Type: text/css");
+    client.println("Expires: Sat, 05 Apr 2025 00:00:00 GMT"); //we don't want to resend the css every time
+    client.println(""); //  do not forget this one
+    printCSS(client);
+    return;
 
-}
- else {
+  }
+  else { //many browsers request favicon.ico for example
     client.println("HTTP/1.1 404 Not Found");
     client.println("Content-Type: text/html");
-  client.println(""); //  do not forget this one
-  client.println("-");
+    client.println(""); //  do not forget this one
+    client.println("-");
 
     return;
   }
- 
-// Set ledPin according to the request
-//digitalWrite(ledPin, value);
- 
+
+  // Set ledPin according to the request
+  //digitalWrite(ledPin, value);
+
   // Return the response
   client.println("HTTP/1.1 200 OK");
   client.println("Content-Type: text/html");
   client.println(""); //  do not forget this one
 
-  
+
   client.print("<!DOCTYPE HTML>");
   client.print("<html><head>");
   //client.print("<style>body {zoom: 3}</style>");
   //printCSS(client);
   client.print("<link rel=\"stylesheet\" type=\"text/css\" href=\"mystyle.css\">");
   client.print("</head><body>");
- 
+
   client.print("<br><br>");
   client.print("<a href=\"/LED=ON\"");
-  if(value==HIGH) client.print(" class=\"bp\"");
+  if (value == HIGH) client.print(" class=\"bp\"");
   client.print(">ON</a> ");
   client.print("<a href=\"/LED=OFF\"");
-  if(value==LOW) client.print(" class=\"bp\"");
+  if (value == LOW) client.print(" class=\"bp\"");
   client.print(">OFF</a> ");
   client.print("</body></html>");
- 
+
   delay(1);
   Serial.println("Client disonnected");
   Serial.println("");
- 
+
 }
 
 void printCSS(WiFiClient client)
 {
   //client.print("<style>");
-  
-  client.print("body {zoom: 3}");
-  
-  client.print("a {");
-  client.print("display: inline-block;");
-  client.print("padding: 15px 25px;");
-  client.print("font-size: 24px;");
-  client.print("cursor: pointer;");
-  client.print("text-align: center;");
-  client.print("text-decoration: none;");
-  client.print("outline: none;");
-  client.print("color: #fff;");
-  client.print("background-color: #4064bb;");
-  client.print("border: none;");
-  client.print("border-radius: 15px;");
-  client.print("box-shadow: 0 9px #999;");
-  client.print("font-family: Sans-Serif;");
-  client.print("}");
 
-  client.print("a:hover {background-color: #2c4480}");
+  client.print("body {zoom: 3}"
+               "a {"
+               "display: inline-block;"
+               "padding: 15px 25px;"
+               "font-size: 24px;"
+               "cursor: pointer;"
+               "text-align: center;"
+               "text-decoration: none;"
+               "outline: none;"
+               "color: #fff;"
+               "background-color: #4064bb;"
+               "border: none;"
+               "border-radius: 15px;"
+               "box-shadow: 0 9px #999;"
+               "font-family: Sans-Serif;"
+               "}"
 
-  client.print("a:active {");
-  client.print("background-color: #5a7ac7;");
-  client.print("box-shadow: 0 0px #666;");
-  client.print("transform: translateY(9px);");
-  client.print("}");
+               "a:hover {background-color: #2c4480}"
 
-  client.print(".bp {");
-  client.print("color: #000;");
-  client.print("background-color: #ffdb00;");
-  client.print("box-shadow: 0 3px #999;");
-  client.print("transform: translateY(6px);");
-  client.print("}");
-  
-  client.print(".bp:hover {");
-  client.print("background-color: #cbae00;");
-  client.print("}");
-  client.print(".bp:active {");
-  client.print("background-color: #ffdb00;");
-  client.print("box-shadow: 0 0px #666;");
-  client.print("transform: translateY(9px);");
-  client.print("}");
+               "a:active {"
+               "background-color: #5a7ac7;"
+               "box-shadow: 0 0px #666;"
+               "transform: translateY(9px);"
+               "}"
+
+               ".bp {"
+               "color: #000;"
+               "background-color: #ffdb00;"
+               "box-shadow: 0 3px #999;"
+               "transform: translateY(6px);"
+               "}"
+
+               ".bp:hover {"
+               "background-color: #cbae00;"
+               "}"
+               ".bp:active {"
+               "background-color: #ffdb00;"
+               "box-shadow: 0 0px #666;"
+               "transform: translateY(9px);"
+               "}");
+
 
   //client.print("</style>");
 }
