@@ -6,6 +6,9 @@ const char* password = "1234";
 int ledPin = 13; // GPIO13 -> Mapped to NodeMCU D7
 WiFiServer server(80);
 
+int ledValue = LOW;
+int servoPos = 0;
+
 void setup() {
   Serial.begin(115200);
   delay(10);
@@ -62,6 +65,8 @@ void loop() {
     return;
   }
 
+  client.setNoDelay(false);
+
   // Wait until the client sends some data
   Serial.println("new client");
   while (!client.available()) {
@@ -75,13 +80,15 @@ void loop() {
 
   // Match the request
 
-  int value = LOW;
+int pos = 0;
   if (request.indexOf("/LED=ON") != -1)  {
     digitalWrite(ledPin, HIGH);
-    value = HIGH;
+    ledValue = HIGH;
   } else if (request.indexOf("/LED=OFF") != -1)  {
     digitalWrite(ledPin, LOW);
-    value = LOW;
+    ledValue = LOW;
+  } else if ((pos = request.indexOf("/SER=")) != -1) {
+    //TODO
   } else if (request.indexOf("mystyle.css") != -1) {
     client.println("HTTP/1.1 200 OK");
     client.println("Content-Type: text/css");
@@ -101,7 +108,7 @@ void loop() {
   }
 
   // Set ledPin according to the request
-  //digitalWrite(ledPin, value);
+  //digitalWrite(ledPin, ledValue);
 
   // Return the response
   client.println("HTTP/1.1 200 OK");
@@ -118,12 +125,23 @@ void loop() {
 
   client.print("<br><br>");
   client.print("<a href=\"/LED=ON\"");
-  if (value == HIGH) client.print(" class=\"bp\"");
+  if (ledValue == HIGH) client.print(" class=\"bp\"");
   client.print(">ON</a> ");
   client.print("<a href=\"/LED=OFF\"");
-  if (value == LOW) client.print(" class=\"bp\"");
+  if (ledValue == LOW) client.print(" class=\"bp\"");
   client.print(">OFF</a> ");
   client.print("</body></html>");
+
+  client.print("<br><br>");
+  for (int i = 0; i < 9; i++)
+  {
+    client.print("<a href=\"/SER=");
+    client.print((i - 4) * 45);
+    client.print("\"");
+    client.print(">");
+    client.print((i - 4) * 45);
+    client.print("</a> ");
+  }
 
   delay(1);
   Serial.println("Client disonnected");
@@ -135,7 +153,8 @@ void printCSS(WiFiClient client)
 {
   //client.print("<style>");
 
-  client.print("body {zoom: 3}"
+  client.print(""
+               //"body {zoom: 3}"
                "a {"
                "display: inline-block;"
                "padding: 15px 25px;"
