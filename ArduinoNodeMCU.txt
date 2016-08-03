@@ -1,0 +1,257 @@
+Arduino NodeMCU
+----------------
+
+This tutorial explains how to program NodeMCU with Arduino IDE
+http://www.instructables.com/id/Quick-Start-to-Nodemcu-ESP8266-on-Arduino-IDE/
+
+In order not to break previous Arduino IDE installations, I download the Arduino "Windows ZIP file for non admin install" from Arduino.cc
+* Uncompress arduino-1.6.9-windows.zip to C:\Octavi
+* Execute arduino.exe
+* File->Preferences
+* Additional Boards Manager URLs: http://arduino.esp8266.com/stable/package_esp8266com_index.json
+* OK
+* Tools -> Board:"Arduino..." -> Boards Manager -> Filter your search: esp -> Select "esp8266 by ESP8266 Community" -> Install (I installed the latest version 2.3.0)
+* Connect the NodeMCU. Windows installs the drivers opening a "Device Setup" window
+* Now the menu Tools -> Port: "COM3" is enabled (previously was "Port" and was disabled)
+* Tools -> Board -> Select mine: "NodeMCU 0.9"
+* Upload the "BlinkNodeMCU" sketch (this is how I saved it in my computer):
+
+	//pin 13 is mapped to D7 in NodeMCU
+	//connect a LED in series with a resistor between D7 and GND
+	//NodeMCU 
+	void setup() {
+	  // initialize digital pin 13 as an output.
+	  pinMode(13, OUTPUT);
+	}
+
+	// the loop function runs over and over again forever
+	void loop() {
+	  digitalWrite(13, HIGH);   // turn the LED on (HIGH is the voltage level)
+	  delay(1000);              // wait for a second
+	  digitalWrite(13, LOW);    // turn the LED off by making the voltage LOW
+	  delay(1000);              // wait for a second
+	}
+
+NodeMCU pins:
+ D0  D1  D2  D3  D4 3V3 GND  D5  D6  D7  D8  RX  TX GND 3V3
+                                                               FLASH Button
+                                                               USB Connector
+                                                               RST Button (USER)
+ A0 RSV RSV SD3 SD2 SD1 CMD SD0 CLK GND 3V3  EN RST GND Vin(5V)
+ 
+The catode, the negative (short leg, flat side of the LED) is connected to GND  
+The anode, positive (long leg) is connected to D7
+
+WebServer to control an LED:
+---------------------------
+
+* Use the same wiring as before (LED connected to D7 and GND)
+* This is the sketch (I saved as BinkWebServerNodeMCU):
+
+	#include <ESP8266WiFi.h>
+	 
+	const char* ssid = "Magesh";
+	const char* password = "jayakumar";
+	 
+	int ledPin = 13; // GPIO13 -> Mapped to NodeMCU D7
+	WiFiServer server(80);
+	 
+	void setup() {
+	  Serial.begin(115200);
+	  delay(10);
+	 
+	  pinMode(ledPin, OUTPUT);
+	  digitalWrite(ledPin, LOW);
+	 
+	  // Connect to WiFi network
+	  Serial.println();
+	  Serial.println();
+	  Serial.print("Connecting to ");
+	  Serial.println(ssid);
+	 
+	  WiFi.begin(ssid, password);
+	 
+	  while (WiFi.status() != WL_CONNECTED) {
+		delay(500);
+		Serial.print(".");
+	  }
+	  Serial.println("");
+	  Serial.println("WiFi connected");
+	 
+	  // Start the server
+	  server.begin();
+	  Serial.println("Server started");
+	 
+	  // Print the IP address
+	  Serial.print("Use this URL to connect: ");
+	  Serial.print("http://");
+	  Serial.print(WiFi.localIP());
+	  Serial.println("/");
+	 
+	}
+	 
+	void loop() {
+	  // Check if a client has connected
+	  WiFiClient client = server.available();
+	  if (!client) {
+		return;
+	  }
+	 
+	  // Wait until the client sends some data
+	  Serial.println("new client");
+	  while(!client.available()){
+		delay(1);
+	  }
+	 
+	  // Read the first line of the request
+	  String request = client.readStringUntil('\r');
+	  Serial.println(request);
+	  client.flush();
+	 
+	  // Match the request
+	 
+	  int value = LOW;
+	  if (request.indexOf("/LED=ON") != -1)  {
+		digitalWrite(ledPin, HIGH);
+		value = HIGH;
+	  }
+	  if (request.indexOf("/LED=OFF") != -1)  {
+		digitalWrite(ledPin, LOW);
+		value = LOW;
+	  }
+	 
+	// Set ledPin according to the request
+	//digitalWrite(ledPin, value);
+	 
+	  // Return the response
+	  client.println("HTTP/1.1 200 OK");
+	  client.println("Content-Type: text/html");
+	  client.println(""); //  do not forget this one
+	  client.println("<!DOCTYPE HTML>");
+	  client.println("<html>");
+	 
+	  client.print("Led pin is now: ");
+	 
+	  if(value == HIGH) {
+		client.print("On");
+	  } else {
+		client.print("Off");
+	  }
+	  client.println("<br><br>");
+	  client.println("<a href=\"/LED=ON\"\"><button>Turn On </button></a>");
+	  client.println("<a href=\"/LED=OFF\"\"><button>Turn Off </button></a><br />");  
+	  client.println("</html>");
+	 
+	  delay(1);
+	  Serial.println("Client disonnected");
+	  Serial.println("");
+	 
+	}
+
+* Change the SSID and Password to match your Wifi Router
+* Upload it
+* Open Tools -> Serial Monitor
+* Change to 115200 baud. You will see what is the IP. Connect to a 
+	Connecting to TELECOM-NFUTUU
+	..............
+	WiFi connected
+	Server started
+	Use this URL to connect: http://192.168.1.64/
+	new client
+	GET / HTTP/1.1
+	Client disonnected
+	
+Power it with batteries
+-----------------------
+
+Just connect a pack of 3 or 4 AA batteries to the Vin (or 5V) pin and GND (be careful with the polarity
+
+
+Control a Servo
+---------------
+https://www.arduino.cc/en/Tutorial/Sweep
+
+Pins
+* Brown/Black: GND
+* Red: Vin/5V
+* Yellow/Orange/White: D7
+
+Code (I saved it as ServoSweepNodeMCU):
+
+	/* Sweep
+	 by BARRAGAN <http://barraganstudio.com>
+	 This example code is in the public domain.
+
+	 modified 8 Nov 2013
+	 by Scott Fitzgerald
+	 http://www.arduino.cc/en/Tutorial/Sweep
+	*/
+
+	#include <Servo.h>
+
+	Servo myservo;  // create servo object to control a servo
+	// twelve servo objects can be created on most boards
+
+	int pos = 0;    // variable to store the servo position
+
+	void setup() {
+	  myservo.attach(13);  // attaches the servo on pin 13 to the servo object
+	}
+
+	void loop() {
+	  while(true)
+	  {
+	  for (pos = 0; pos <= 180; pos += 1) { // goes from 0 degrees to 180 degrees
+		// in steps of 1 degree
+		myservo.write(pos);              // tell servo to go to position in variable 'pos'
+		delay(15);                       // waits 15ms for the servo to reach the position
+	  }
+	  for (pos = 180; pos >= 0; pos -= 1) { // goes from 180 degrees to 0 degrees
+		myservo.write(pos);              // tell servo to go to position in variable 'pos'
+		delay(15);                       // waits 15ms for the servo to reach the position
+	  }
+	  }
+	}
+
+	
+NodeMCU as an Access Point
+--------------------------
+
+Library documentation:
+https://github.com/esp8266/Arduino/blob/master/doc/libraries.md#wifiesp8266wifi-library
+
+Tutorial:
+https://learn.sparkfun.com/tutorials/esp8266-thing-hookup-guide/example-sketch-ap-web-server
+
+TODO:
+* NodeMCU as a Wifi Access Point
+* Nicer (mobile friendly) web page (at least bigger buttons)
+* UDP server and android app
+
+
+NodeMCU Arduino-IDE port mapping
+---------------------------------
+See https://github.com/nodemcu/nodemcu-devkit-v1.0#pin-map
+
+NodeMCU -> Arduino IDE PIN
+* D0 -> 16
+* D1 -> 5
+* D2 -> 4
+* D3 -> 0
+* D4 -> 2
+* D5 -> 14
+* D6 -> 12
+* D7 -> 13
+* D8 -> 15
+* D9 -> 3
+* D10 -> 1
+
+Lessons learned:
+-----------------
+File ServoSweepNodeMCU has all together
+
+* the css must be sent in a separate file with a "Expires" in the future (2025) to avoid the clients reloading it every time
+* a 404 error must be sent for non existent URLs like "favicon.ico". If we don't do that, some clients (Chrome) will ask for it every time
+* client.println or client.print send a TCP packet and wait for a response. Is better to condstruct a String and send all the html file in a single packet
+* servos have a range that is not 0 180, mine works from 30-180. Trying to go below 30 makes the servo vibrate continuously which I guess is not a good thing for the battery life or for the servo
+
