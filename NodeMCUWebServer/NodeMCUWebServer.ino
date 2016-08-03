@@ -79,10 +79,25 @@ void loop() {
   if (request.indexOf("/LED=ON") != -1)  {
     digitalWrite(ledPin, HIGH);
     value = HIGH;
-  }
-  if (request.indexOf("/LED=OFF") != -1)  {
+  } else if (request.indexOf("/LED=OFF") != -1)  {
     digitalWrite(ledPin, LOW);
     value = LOW;
+  } else if (request.indexOf("mystyle.css") != -1) {
+  client.println("HTTP/1.1 200 OK");
+  client.println("Content-Type: text/css");
+  client.println("Expires: Sat, 05 Apr 2025 00:00:00 GMT");
+  client.println(""); //  do not forget this one
+  printCSS(client);
+  return;
+
+}
+ else {
+    client.println("HTTP/1.1 404 Not Found");
+    client.println("Content-Type: text/html");
+  client.println(""); //  do not forget this one
+  client.println("-");
+
+    return;
   }
  
 // Set ledPin according to the request
@@ -92,23 +107,76 @@ void loop() {
   client.println("HTTP/1.1 200 OK");
   client.println("Content-Type: text/html");
   client.println(""); //  do not forget this one
-  client.println("<!DOCTYPE HTML>");
-  client.println("<html><head><style>body {zoom: 3}</style></head><body>");
+
+  
+  client.print("<!DOCTYPE HTML>");
+  client.print("<html><head>");
+  //client.print("<style>body {zoom: 3}</style>");
+  //printCSS(client);
+  client.print("<link rel=\"stylesheet\" type=\"text/css\" href=\"mystyle.css\">");
+  client.print("</head><body>");
  
-  client.print("Led pin is now: ");
- 
-  if(value == HIGH) {
-    client.print("On");
-  } else {
-    client.print("Off");
-  }
-  client.println("<br><br>");
-  client.println("<a href=\"/LED=ON\"\><button>Turn On </button></a>");
-  client.println("<a href=\"/LED=OFF\"\><button>Turn Off </button></a><br />");  
-  client.println("</body></html>");
+  client.print("<br><br>");
+  client.print("<a href=\"/LED=ON\"");
+  if(value==HIGH) client.print(" class=\"bp\"");
+  client.print(">ON</a> ");
+  client.print("<a href=\"/LED=OFF\"");
+  if(value==LOW) client.print(" class=\"bp\"");
+  client.print(">OFF</a> ");
+  client.print("</body></html>");
  
   delay(1);
   Serial.println("Client disonnected");
   Serial.println("");
  
 }
+
+void printCSS(WiFiClient client)
+{
+  //client.print("<style>");
+  
+  client.print("body {zoom: 3}");
+  
+  client.print("a {");
+  client.print("display: inline-block;");
+  client.print("padding: 15px 25px;");
+  client.print("font-size: 24px;");
+  client.print("cursor: pointer;");
+  client.print("text-align: center;");
+  client.print("text-decoration: none;");
+  client.print("outline: none;");
+  client.print("color: #fff;");
+  client.print("background-color: #4064bb;");
+  client.print("border: none;");
+  client.print("border-radius: 15px;");
+  client.print("box-shadow: 0 9px #999;");
+  client.print("font-family: Sans-Serif;");
+  client.print("}");
+
+  client.print("a:hover {background-color: #2c4480}");
+
+  client.print("a:active {");
+  client.print("background-color: #5a7ac7;");
+  client.print("box-shadow: 0 0px #666;");
+  client.print("transform: translateY(9px);");
+  client.print("}");
+
+  client.print(".bp {");
+  client.print("color: #000;");
+  client.print("background-color: #ffdb00;");
+  client.print("box-shadow: 0 3px #999;");
+  client.print("transform: translateY(6px);");
+  client.print("}");
+  
+  client.print(".bp:hover {");
+  client.print("background-color: #cbae00;");
+  client.print("}");
+  client.print(".bp:active {");
+  client.print("background-color: #ffdb00;");
+  client.print("box-shadow: 0 0px #666;");
+  client.print("transform: translateY(9px);");
+  client.print("}");
+
+  //client.print("</style>");
+}
+
