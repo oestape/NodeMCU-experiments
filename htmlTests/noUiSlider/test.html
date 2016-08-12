@@ -12,6 +12,21 @@
 
 	<link href="./nouislider.min.css" rel="stylesheet">
 	<script src="./nouislider.min.js"></script>
+<style>#showcase {
+	text-align: center;
+}
+#range {
+	
+	margin: 0 auto 60px;
+}
+#value-span {
+	width: 50%;
+	float: left;
+	display: block;
+	text-align: center;
+	margin: 0;
+}
+</style>
 
 </head>
 
@@ -24,93 +39,75 @@
 
 
 		<div class="example" id="showcase">
-			<div id="range"></div>
-			<span id="value-span"></span>
-			<input id="value-input">
+			<span>Value1: </span><span id="value-span1"></span>
+			<div id="range1"></div>
+
+			<span>Value2: </span><span id="value-span2"></span>
+			<div id="range2"></div>
+
+			<span>Value3: </span><span id="value-span3"></span>
+			<div id="range3"></div>
+			
 			
 <script>
-var range = document.getElementById('range');
+var range1 = document.getElementById('range1');
+var range2 = document.getElementById('range2');
+var range3 = document.getElementById('range3');
 
-function filter10( value, type ){
-	return (value % 100 == 0) ? 1: ((value % 10==0)?2:0);
+function createSlider0100(divid)
+{
+	noUiSlider.create(divid, {
+		start: [20], // Handle start position
+		step: 1, // Slider moves in increments of '10'
+		direction: 'ltr', // Put '0' at the bottom of the slider
+		orientation: 'horizontal', // Orient the slider vertically
+		connect: 'lower', //green bar at the left
+		range: { // Slider can select '0' to '100'
+			'min': 0,
+			'max': 100
+		},
+		format: {
+		  to: function ( value ) {
+			return value.toString().replace('.00', '');
+		  },
+		  from: function ( value ) {
+			return value+'.00';
+		  }
+		}
+	});
+
 }
-noUiSlider.create(range, {
-	start: [20], // Handle start position
-	step: 1, // Slider moves in increments of '10'
-	direction: 'ltr', // Put '0' at the bottom of the slider
-	orientation: 'horizontal', // Orient the slider vertically
-	connect: 'lower', //green bar at the left
-	range: { // Slider can select '0' to '100'
-		'min': 0,
-		'max': 100
-	},
-	pips: { // Show a scale with the slider
-		mode: 'positions',
-		values: [0,10,20,30,40,50,60,70,80,90,100],
-		filter: filter10,
-		density: 2
-	},
-	format: {
-	  to: function ( value ) {
-		return value.toString().replace('.00', '');
-	  },
-	  from: function ( value ) {
-		return value+'.00';
-	  }
-	}
-});
+
+createSlider0100(range1);
+createSlider0100(range2);
+createSlider0100(range3);
 
 
 </script>			
 <script>
-var valueInput = document.getElementById('value-input'),
-	valueSpan = document.getElementById('value-span');
 
-// When the slider value changes, update the input and span
-range.noUiSlider.on('update', function( values, handle ) {
-		valueInput.value = values[handle];
-		valueSpan.innerHTML = values[handle];
-});
+function connect(value_span_name, divid)
+{
+	var valueSpan = document.getElementById(value_span_name);
 
-// When the input changes, set the slider value
-valueInput.addEventListener('change', function(){
-	range.noUiSlider.set([this.value]);
-});
+	// When the slider value changes, update the input and span
+	divid.noUiSlider.on('update', function( values, handle ) {
+			valueSpan.innerHTML = values[handle];
+	});
+
+}
+
+connect('value-span1', range1);
+connect('value-span2', range2);
+connect('value-span3', range3);
+
 </script>		</div>
 
 	
-<style>#showcase {
-	margin: 0 20px;
-	text-align: center;
-}
-#range {
-	width: 300px;
-	margin: 0 auto 60px;
-}
-#value-span,
-#value-input {
-	width: 50%;
-	float: left;
-	display: block;
-	text-align: center;
-	margin: 0;
-}
-</style>
+
 
 
 	</div>
-
-	<script>
-
-		var headers = document.getElementsByClassName('viewer-header');
-
-		for ( var i = 0; i < headers.length; i++ ) {
-			headers[i].addEventListener('click', function(){
-				this.classList.toggle('open');
-			});
-		}
-
-	</script>
 
 
 
